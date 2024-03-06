@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Tasks</title>
+</head>
+<body>
+    <h1>JavaScript Tasks</h1>
+    
+    <div>
+        <h2>Задача 1 (на таймерах)</h2>
+        <button onclick="runCounter()">Запустить счётчик</button>
+        <div id="counterResults"></div>
+    </div>
+
+    <div>
+        <h2>Задача 2 (на обещаниях)</h2>
+        <button onclick="runDelay()">Запустить задержку</button>
+        <div id="delayResults"></div>
+    </div>
+
+    <div>
+        <h2>Задача 3 (на async/await)</h2>
+        <button onclick="runGithubUser()">Получить пользователя GitHub</button>
+        <div id="githubUserResults"></div>
+    </div>
+
+    <script>
+        // Задача 1 (на таймерах)
+        function counter(n) {
+            let intervalId = setInterval(() => {
+                document.getElementById('counterResults').textContent = n;
+                n--;
+                if (n < 0) {
+                    clearInterval(intervalId);
+                    document.getElementById('counterResults').textContent = 'Счётчик завершён';
+                }
+            }, 1000);
+        }
+
+        function runCounter() {
+            counter(5);
+        }
+
+        // Задача 2 (на обещаниях)
+        function delay(N) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    document.getElementById('delayResults').textContent = `Прошло ${N} секунд`;
+                    resolve();
+                }, N * 1000);
+            });
+        }
+
+        function runDelay() {
+            delay(5);
+        }
+
+        // Задача 3 (на async/await)
+        class HttpError extends Error {
+            constructor(response) {
+                super(`${response.status} for ${response.url}`);
+                this.name = 'HttpError';
+                this.response = response;
+            }
+        }
+
+        async function loadJson(url) {
+            let response = await fetch(url);
+            if (response.status == 200) {
+                return response.json();
+            } else {
+                throw new HttpError(response);
+            }
+        }
+
+        async function getGithubUser() {
+            let name;
+            do {
+                name = prompt("Введите логин?", "GolotvinNN");
+                try {
+                    let user = await loadJson(`https://api.github.com/users/${name}`);
+                    document.getElementById('githubUserResults').textContent = `Полное имя: ${user.name}`;
+                    return user;
+                } catch (err) {
+                    if (err instanceof HttpError && err.response.status == 404) {
+                        alert("Такого пользователя не существует, пожалуйста, повторите ввод.");
+                    } else {
+                        throw err;
+                    }
+                }
+            } while (true);
+        }
+
+        function runGithubUser() {
+            getGithubUser();
+        }
+    </script>
+</body>
+</html>
